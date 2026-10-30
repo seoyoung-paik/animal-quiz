@@ -837,9 +837,12 @@
     renderSound();
   });
   // 목소리: 기기에 있는 한국어 목소리 중 자연스러운 것을 먼저 골라요
+  // 아이폰·맥의 장난감 같은 목소리들(영어 이름)은 한국어를 어색하게 읽어서 목록에서 빼요
+  const NOVELTY = /^(Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley|Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Junior|Kathy|Fred|Ralph)\b/i;
   function koVoices() {
-    try { return speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().replace('_', '-').startsWith('ko')); }
-    catch (e) { return []; }
+    try {
+      return speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().replace('_', '-').startsWith('ko') && !NOVELTY.test(v.name));
+    } catch (e) { return []; }
   }
   function voiceScore(v) {
     const n = v.name;
