@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>동물 스무고개</title>
+<meta name="description" content="6~7세 아이를 위한 동물 스무고개 퀴즈">
+<meta name="theme-color" content="#EAF6F3">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="동물 스무고개">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+  /* 홈 화면 앱: 화면을 길게 눌러도 글자 선택·확대가 안 되게 */
+  html, body { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+  button { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+</style>
+</head>
+<body>
+<style>
+  /* Layout: one centered column like a picture book page — the newest hint as a big speech bubble, big buttons under it, earlier hints listed below */
+  :root {
+    --bg: #EAF6F3;
+    --surface: #FFFFFF;
+    --ink: #1E3A4C;
+    --muted: #587280;
+    --line: #CBE1DB;
+    --accent: #FFC93C;
+    --on-accent: #1E3A4C;
+    --good: #2E9E66;
+    --t-all: #FFF0B8;
+    --t-sea: #CDE8F7;
+    --t-farm: #F7E3C4;
+    --t-wild: #DCEEC6;
+    --t-bug: #F6D6E2;
+    --t-bird: #E2DCF5;
+    --f-display: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    --f-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F2230; --surface: #17323F; --ink: #EAF4F2; --muted: #9DB6BF; --line: #2A4A57;
+      --accent: #FFD25A; --on-accent: #1E3A4C; --good: #4CC48A;
+      --t-all: #45401F; --t-sea: #1C3F55; --t-farm: #4A3820; --t-wild: #2E4524; --t-bug: #4A2635; --t-bird: #352E52;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F2230; --surface: #17323F; --ink: #EAF4F2; --muted: #9DB6BF; --line: #2A4A57;
+    --accent: #FFD25A; --on-accent: #1E3A4C; --good: #4CC48A;
+    --t-all: #45401F; --t-sea: #1C3F55; --t-farm: #4A3820; --t-wild: #2E4524; --t-bug: #4A2635; --t-bird: #352E52;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .app {
+    max-width: 760px;
+    margin: 0 auto;
+    padding-block: 18px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .screen { display: flex; flex-direction: column; gap: 20px; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible { outline: 4px solid var(--accent); outline-offset: 3px; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .top h1 { font-family: var(--f-display); font-weight: 400; font-size: 2rem; margin: 0; letter-spacing: -0.01em; }
+  .top-right { display: flex; align-items: center; gap: 10px; }
+  .stars {
+    font-family: var(--f-display); font-size: 1.2rem;
+    background: var(--surface); border: 2px solid var(--line); border-radius: 999px; padding: 6px 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .icon-btn {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--line); font-size: 1.3rem;
+  }
+
+  .btn {
+    font-family: var(--f-display); font-size: 1.2rem;
+    min-height: 56px; padding: 10px 24px; border-radius: 999px;
+    background: var(--surface); border: 2px solid var(--line);
+    transition: transform .15s ease;
+  }
+  .btn:active { transform: scale(.96); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .btn.ghost { min-height: 44px; padding: 6px 16px; font-size: 1rem; }
+
+  /* Home */
+  .lead { font-family: var(--f-display); font-size: 1.5rem; margin: 0; text-wrap: balance; }
+  .note { margin: 0; color: var(--muted); font-size: 1rem; line-height: 1.6; max-width: 60ch; }
+  .cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+  .cat {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 22px 12px 18px; border-radius: 26px; border: 3px solid transparent;
+    background: var(--tint);
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .cat:hover { transform: translateY(-3px); border-color: var(--ink); }
+  .cat .e { font-size: 3.2rem; line-height: 1; }
+  .cat .n { font-family: var(--f-display); font-size: 1.35rem; }
+  .cat .c { color: var(--muted); font-size: .95rem; }
+
+  /* Play */
+  .stage { display: flex; align-items: center; gap: 16px; }
+  .qmark {
+    flex: none; width: 76px; height: 76px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--accent); color: var(--on-accent);
+    font-family: var(--f-display); font-size: 2.8rem;
+    animation: wobble 2.6s ease-in-out infinite;
+  }
+  .stage-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .stage-text .cat-label { color: var(--muted); font-size: 1rem; }
+  .stage-text .goge { font-family: var(--f-display); font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+  .stage-text .goge small { font-size: 1rem; color: var(--muted); }
+
+  .bubble {
+    position: relative;
+    background: var(--surface); border: 3px solid var(--accent); border-radius: 28px;
+    padding: 22px 22px 24px;
+    display: flex; flex-direction: column; gap: 8px;
+    animation: pop .35s ease-out;
+  }
+  .bubble::before {
+    content: ""; position: absolute; top: -14px; left: 30px;
+    border: 12px solid transparent; border-bottom-color: var(--accent); border-top: 0;
+  }
+  .bubble .label { font-family: var(--f-display); font-size: 1.05rem; color: var(--muted); }
+  .bubble .text { font-family: var(--f-display); font-size: 1.9rem; line-height: 1.4; text-wrap: balance; word-break: keep-all; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .controls .btn.primary { flex: 1 1 100%; min-height: 64px; font-size: 1.5rem; }
+  .controls .btn:not(.primary) { flex: 1 1 0; white-space: nowrap; }
+  .controls .btn.primary.listening { background: var(--good); border-color: var(--good); color: #fff; animation: pulse 1.2s ease-in-out infinite; }
+  .controls .btn:disabled { opacity: .5; cursor: default; }
+  .countdown { margin: 0; color: var(--muted); font-size: 1.05rem; min-height: 1.5em; }
+
+  /* 아이가 말한 답에 대한 반응 */
+  .heard {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 2px solid var(--line); border-radius: 18px;
+    padding: 12px 16px; font-family: var(--f-display); font-size: 1.3rem; line-height: 1.4;
+    animation: pop .3s ease-out;
+  }
+  .heard .face { font-size: 2rem; flex: none; }
+  .heard.bad { border-color: var(--accent); }
+  .heard.ok { border-color: var(--good); }
+
+  /* 그림으로 고르기 */
+  .picks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .pick {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 14px 8px; border-radius: 22px; border: 3px solid var(--line); background: var(--surface);
+    transition: transform .15s ease;
+  }
+  .pick:active { transform: scale(.96); }
+  .pick .e { font-size: 3.4rem; line-height: 1.1; }
+  .pick .n { font-family: var(--f-display); font-size: 1.25rem; }
+  .pick.wrong { opacity: .35; border-style: dashed; }
+  .picks-title { font-family: var(--f-display); font-size: 1.15rem; color: var(--muted); margin: 0; }
+
+  .past h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.15rem; color: var(--muted); margin: 0 0 10px; }
+  .hints { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .hint {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--surface); border: 2px solid var(--line); border-radius: 18px;
+    padding: 12px 14px; font-size: 1.15rem; line-height: 1.5;
+  }
+  .hint .num {
+    flex: none; width: 30px; height: 30px; border-radius: 50%;
+    display: grid; place-items: center; margin-top: 1px;
+    background: var(--bg); font-family: var(--f-display); font-size: 1rem;
+  }
+
+  /* Answer */
+  .win { align-items: center; text-align: center; gap: 10px; padding-block: 12px; }
+  .win .big { font-size: 8rem; line-height: 1.1; }
+  .win.won .big { animation: bounce 1s ease-in-out infinite; }
+  .win .name { font-family: var(--f-display); font-size: 2.6rem; margin: 0; }
+  .win h2 { font-family: var(--f-display); font-weight: 400; font-size: 2rem; margin: 0; text-wrap: balance; }
+  .win.won h2 { color: var(--good); }
+  .win p { margin: 0; font-size: 1.25rem; }
+  .win .earned { font-family: var(--f-display); font-size: 1.4rem; }
+  .win .row { justify-content: center; margin-top: 10px; }
+
+  .voice {
+    background: var(--surface); border: 2px solid var(--line); border-radius: 22px;
+    padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .voice h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.25rem; margin: 0; }
+  .voice-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  .voice label { display: flex; flex-direction: column; gap: 6px; font-size: 1rem; color: var(--muted); min-width: 0; }
+  .voice select {
+    font: inherit; color: var(--ink); width: 100%; min-height: 48px;
+    border-radius: 12px; border: 2px solid var(--line); background: var(--bg); padding: 6px 10px;
+  }
+
+  @media (max-width: 480px) {
+    .top h1 { font-size: 1.6rem; }
+    .bubble .text { font-size: 1.6rem; }
+    .voice-row { grid-template-columns: 1fr; }
+  }
+
+  @keyframes pop { from { transform: scale(.94); opacity: .3; } to { transform: scale(1); opacity: 1; } }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+  @keyframes wobble { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<main class="app">
+  <header class="top">
+    <h1>동물 스무고개</h1>
+    <div class="top-right">
+      <span class="stars" id="stars" aria-label="모은 별">⭐ 0</span>
+      <button class="icon-btn" id="soundBtn" aria-pressed="true" aria-label="소리 끄기">🔊</button>
+    </div>
+  </header>
+
+  <section id="home" class="screen">
+    <p class="lead">어떤 동물 퀴즈를 할까요?</p>
+    <div class="cats" id="cats"></div>
+    <p class="note">힌트를 하나씩 소리 내어 읽어 줘요. 답을 알 것 같으면 "🎤 정답 말하기"를 누르고 동물 이름을 크게 말해요. 모르겠으면 "다음 힌트"를 눌러요. 힌트는 모두 여덟 개예요.</p>
+    <div class="voice">
+      <h2>목소리 고르기</h2>
+      <div class="voice-row">
+        <label for="voiceSel">목소리<select id="voiceSel"></select></label>
+        <label for="rateSel">빠르기<select id="rateSel">
+          <option value="0.8">천천히</option>
+          <option value="0.95">보통</option>
+          <option value="1.1">조금 빠르게</option>
+        </select></label>
+      </div>
+      <div class="row"><button class="btn" id="testVoice">🔊 들어 보기</button></div>
+      <p class="note" id="voiceNote"></p>
+    </div>
+  </section>
+
+  <section id="play" class="screen" hidden>
+    <div class="row"><button class="btn ghost" id="homeBtn">← 퀴즈 고르기</button></div>
+    <div class="stage">
+      <div class="qmark" aria-hidden="true">?</div>
+      <div class="stage-text">
+        <span class="cat-label" id="catLabel"></span>
+        <span class="goge" id="goge">1고개</span>
+      </div>
+    </div>
+    <div class="bubble" id="bubble" aria-live="polite">
+      <span class="label" id="bubbleLabel">힌트 1</span>
+      <span class="text" id="bubbleText"></span>
+    </div>
+    <div class="row controls">
+      <button class="btn primary" id="speakBtn">🎤 정답 말하기</button>
+      <button class="btn" id="nextBtn">다음 힌트 ▶</button>
+      <button class="btn" id="repeatBtn">🔊 다시 듣기</button>
+    </div>
+    <div class="row controls">
+      <button class="btn ghost" id="pickBtn">🖼️ 그림으로 고르기</button>
+      <button class="btn ghost" id="revealBtn">🙈 정답 보기</button>
+    </div>
+    <div class="heard" id="heard" hidden aria-live="polite"><span class="face" id="heardFace"></span><span id="heardText"></span></div>
+    <div id="pickBox" hidden>
+      <p class="picks-title">누구일까요? 하나를 골라 보세요.</p>
+      <div class="picks" id="picks"></div>
+    </div>
+    <p class="countdown" id="countdown" aria-live="polite"></p>
+    <div class="past" id="past" hidden>
+      <h2>지금까지 나온 힌트</h2>
+      <ol class="hints" id="hints"></ol>
+    </div>
+  </section>
+
+  <section id="win" class="screen win" hidden>
+    <h2 id="winTitle"></h2>
+    <div class="big" id="winEmoji"></div>
+    <p class="name" id="winName"></p>
+    <p id="winMsg"></p>
+    <p class="earned" id="earned">별 하나 받았어요 ⭐</p>
+    <div class="row">
+      <button class="btn primary" id="againBtn">한 번 더!</button>
+      <button class="btn" id="otherBtn">다른 퀴즈</button>
+    </div>
+  </section>
+</main>
+
+<script>
+  const CATS = [
+    { id: 'all',  name: '모든 동물',    emoji: '🐾', tint: '--t-all' },
+    { id: 'sea',  name: '바다 동물',    emoji: '🐳', tint: '--t-sea' },
+    { id: 'farm', name: '농장·집 동물', emoji: '🐮', tint: '--t-farm' },
+    { id: 'wild', name: '숲·정글 동물', emoji: '🦁', tint: '--t-wild' },
+    { id: 'bug',  name: '곤충·벌레',    emoji: '🐞', tint: '--t-bug' },
+    { id: 'bird', name: '새',           emoji: '🐦', tint: '--t-bird' },
+  ];
+
+  // [이름, 그림, 분류, 힌트 7개] — 어려운 힌트부터 쉬운 힌트 순서. 8번째 '이름 글자' 힌트는 자동으로 붙어요.
+  const ANIMALS = [
+    ['고래', '🐋', 'sea', ['나는 물속에 살지만 물고기가 아니에요.', '나는 아기에게 젖을 먹여요.', '나는 노래하듯 길게 소리를 내요.', '나는 가끔 물 위로 올라와서 숨을 쉬어요.', '나는 꼬리를 위아래로 흔들며 헤엄쳐요.', '나는 아주아주 커요. 바다에서 제일 큰 동물이에요.', '나는 머리 위 구멍으로 물을 분수처럼 뿜어요.']],
+    ['돌고래', '🐬', 'sea', ['나는 아주 똑똑해요.', '나는 물속에 살지만 물고기가 아니에요.', '나는 친구들과 무리 지어 헤엄쳐요.', '나는 몸이 매끈하고 회색이에요.', '나는 "끼익끼익" 소리로 친구들과 이야기해요.', '나는 늘 웃는 것처럼 보이는 얼굴이에요.', '나는 물 위로 높이 점프하는 걸 좋아해요.']],
+    ['상어', '🦈', 'sea', ['나는 뼈가 말랑한 물렁뼈로 되어 있어요.', '나는 냄새를 아주 잘 맡아요.', '나는 헤엄을 아주 빨리 쳐요.', '나는 이빨이 빠져도 새 이빨이 계속 나요.', '나는 물고기를 잡아먹어요.', '나는 등에 뾰족한 세모 지느러미가 있어요.', '나는 날카로운 이빨이 아주 많은 무서운 물고기예요.']],
+    ['문어', '🐙', 'sea', ['나는 아주 똑똑해서 병뚜껑도 열 수 있어요.', '나는 뼈가 없어서 몸이 말랑말랑해요.', '나는 몸 색깔을 바꿔서 숨을 수 있어요.', '나는 바위 틈에 숨는 걸 좋아해요.', '나는 머리가 동그랗고 커요.', '나는 깜짝 놀라면 까만 먹물을 뿜어요.', '나는 다리가 여덟 개예요. 다리에 동글동글 빨판이 있어요.']],
+    ['오징어', '🦑', 'sea', ['나는 밤에 불빛을 보고 모여들어요.', '나는 뼈가 없어서 몸이 말랑해요.', '나는 몸이 하얗고 길쭉해요.', '나는 깜짝 놀라면 까만 먹물을 뿜어요.', '사람들은 나를 말려서 먹기도 해요.', '나는 머리 끝이 세모 모양이에요.', '나는 다리가 열 개예요.']],
+    ['게', '🦀', 'sea', ['나는 바닷가 갯벌이나 모래밭에 살아요.', '나는 눈이 툭 튀어나와 있어요.', '나는 입에서 보글보글 거품을 내요.', '나는 단단한 껍데기를 입고 있어요.', '나는 다리가 여러 개예요.', '나는 앞으로 안 가고 옆으로 걸어요.', '나는 커다란 집게발이 두 개 있어요.']],
+    ['새우', '🦐', 'sea', ['나는 몸이 작아요.', '나는 얇은 껍데기를 입고 있어요.', '나는 꼬리를 튕겨서 뒤로 톡톡 헤엄쳐요.', '나는 긴 수염이 있어요.', '볶음밥이나 튀김에 내가 들어가요.', '나는 등이 둥글게 구부러져 있어요.', '나를 익히면 빨갛게 변해요.']],
+    ['거북이', '🐢', 'sea wild', ['나는 아주 오래오래 살아요.', '나는 이빨이 없어요.', '나는 모래밭에 알을 낳아요.', '나는 물에서도 땅에서도 지낼 수 있어요.', '나는 아주 느릿느릿 움직여요.', '나는 토끼랑 달리기 시합을 해서 이겼어요.', '나는 등에 단단한 등딱지가 있어서 그 안에 쏙 숨어요.']],
+    ['물개', '🦭', 'sea', ['나는 차가운 바다에 살아요.', '나는 몸이 통통하고 미끈미끈해요.', '나는 물속에서는 빠르지만 땅에서는 뒤뚱거려요.', '나는 바위 위에서 햇볕 쬐는 걸 좋아해요.', '나는 얼굴에 수염이 있어요.', '나는 물고기를 아주 좋아해요.', '나는 지느러미로 박수를 짝짝 쳐요.']],
+    ['복어', '🐡', 'sea', ['나는 이빨이 아주 단단해요.', '나는 바다에 사는 물고기예요.', '나는 눈이 동그랗고 커요.', '나는 몸에 독이 있어서 조심해야 해요.', '나는 몸에 뾰족뾰족한 가시가 있어요.', '나는 물을 꿀꺽 마셔서 몸을 부풀려요.', '나는 화가 나면 풍선처럼 몸이 빵빵해져요.']],
+    ['열대어', '🐠', 'sea', ['나는 따뜻한 바다에 살아요.', '나는 아가미로 숨을 쉬어요.', '나는 지느러미를 살랑살랑 흔들어요.', '어항에서 나를 키우기도 해요.', '나는 산호 사이를 요리조리 헤엄쳐요.', '나는 줄무늬가 있어요.', '나는 색깔이 알록달록 아주 예쁜 물고기예요.']],
+    ['바닷가재', '🦞', 'sea', ['나는 바다 바닥을 기어 다녀요.', '나는 밤에 돌아다녀요.', '나는 긴 더듬이가 있어요.', '나는 단단한 껍데기를 입고 있어요.', '나를 익히면 빨갛게 변해요.', '나는 게랑 닮았지만 몸이 길고 꼬리가 있어요.', '나는 아주 커다란 집게발이 두 개 있어요.']],
+    ['펭귄', '🐧', 'sea bird', ['나는 새예요.', '나는 아주아주 추운 곳에 살아요.', '나는 물고기를 잡아먹어요.', '나는 헤엄을 아주 잘 쳐요.', '나는 친구들과 꼭 붙어서 추위를 견뎌요.', '나는 날개가 있지만 하늘을 날지 못해요.', '나는 까만 옷에 하얀 배, 뒤뚱뒤뚱 걸어요.']],
+
+    ['소', '🐄', 'farm', ['나는 위가 네 개나 있어요.', '나는 풀을 먹고 되새김질을 해요.', '나는 꼬리를 흔들어서 파리를 쫓아요.', '옛날에는 내가 밭 가는 일을 도왔어요.', '나는 머리에 뿔이 있어요.', '나는 사람들에게 우유를 줘요.', '나는 "음매~" 하고 울어요.']],
+    ['돼지', '🐷', 'farm', ['나는 아주 똑똑해요.', '나는 무엇이든 잘 먹어요.', '나는 꼬리가 돌돌 말려 있어요.', '나는 진흙에서 뒹구는 걸 좋아해요.', '나는 분홍색이고 통통해요.', '나는 코가 동글납작하고 구멍이 두 개예요.', '나는 "꿀꿀" 하고 울어요.']],
+    ['닭', '🐔', 'farm bird', ['나는 깃털로 덮여 있어요.', '나는 날개가 있지만 높이 날지 못해요.', '나는 땅을 콕콕 쪼아서 먹이를 먹어요.', '나는 머리에 빨간 볏이 있어요.', '나는 알을 낳아요.', '내 아기는 노란 병아리예요.', '나는 아침마다 "꼬끼오!" 하고 울어요.']],
+    ['말', '🐴', 'farm', ['나는 서서 잠을 잘 수 있어요.', '나는 발에 단단한 발굽이 있어요.', '나는 당근과 각설탕을 좋아해요.', '나는 아주 빨리 달려요.', '나는 목에 긴 갈기가 있어요.', '나는 사람을 등에 태워 줘요.', '나는 "히히힝" 하고 울어요.']],
+    ['양', '🐑', 'farm', ['나는 풀밭에서 친구들과 함께 지내요.', '목동 아저씨가 나를 돌봐 줘요.', '잠이 안 올 때 나를 하나, 둘 세어 봐요.', '나는 털이 구름처럼 복슬복슬해요.', '봄이 되면 내 털을 깎아요.', '내 털로 따뜻한 옷을 만들어요.', '나는 "메에~" 하고 울어요.']],
+    ['염소', '🐐', 'farm', ['나는 무엇이든 우물우물 잘 먹어요.', '나는 눈동자가 네모 모양이에요.', '나는 바위를 아주 잘 기어올라요.', '내 젖으로 치즈를 만들어요.', '나는 머리에 뿔이 있어요.', '나는 턱에 수염이 있어요.', '나는 "음메에~" 하고 울어요.']],
+    ['오리', '🦆', 'farm bird', ['나는 물가에 살아요.', '나는 깃털에 기름이 있어서 물에 젖지 않아요.', '내 아기들은 엄마를 졸졸 따라다녀요.', '나는 발가락 사이에 물갈퀴가 있어요.', '나는 물 위에 둥둥 떠다녀요.', '나는 부리가 넓적하고 노래요.', '나는 "꽥꽥" 하고 울어요.']],
+    ['토끼', '🐰', 'farm wild', ['나는 코를 씰룩씰룩 움직여요.', '나는 앞니가 계속 자라요.', '나는 꼬리가 짧고 동그래요.', '나는 당근과 풀을 좋아해요.', '나는 거북이랑 달리기 시합을 했어요.', '나는 깡충깡충 뛰어요.', '나는 귀가 아주 길어요.']],
+    ['강아지', '🐶', 'farm', ['나는 사람과 아주 친한 친구예요.', '나는 산책을 정말 좋아해요.', '나는 냄새를 아주 잘 맡아요.', '나는 뼈다귀를 좋아해요.', '"앉아!", "손!" 하면 나는 따라 해요.', '나는 기분이 좋으면 꼬리를 흔들어요.', '나는 "멍멍" 하고 짖어요.']],
+    ['고양이', '🐱', 'farm', ['나는 하루에 아주 많이 자요.', '나는 높은 곳에 잘 올라가요.', '나는 어두운 밤에도 잘 볼 수 있어요.', '나는 혀로 몸을 핥아서 깨끗하게 해요.', '나는 기분이 좋으면 "골골" 소리를 내요.', '나는 얼굴에 긴 수염이 있어요.', '나는 "야옹" 하고 울어요.']],
+
+    ['사자', '🦁', 'wild', ['나는 가족과 무리 지어 살아요.', '나는 낮에 늘어지게 낮잠을 자요.', '나는 고기를 먹어요.', '나는 넓은 초원에 살아요.', '나는 "어흥" 하고 크게 울어요.', '나는 "동물의 왕"이라고 불려요.', '아빠는 목에 멋진 갈기가 있어요.']],
+    ['호랑이', '🐯', 'wild', ['나는 혼자 다니는 걸 좋아해요.', '나는 헤엄을 잘 쳐요.', '나는 깊은 숲에 살아요.', '나는 고양이 가족이지만 아주 커요.', '나는 "어흥!" 하고 울어요.', '옛날이야기에서 나는 곶감을 무서워했어요.', '나는 노란 털에 까만 줄무늬가 있어요.']],
+    ['코끼리', '🐘', 'wild', ['나는 기억력이 아주 좋아요.', '나는 진흙으로 목욕을 해요.', '나는 귀가 부채처럼 커다래요.', '나는 하얗고 긴 상아가 있어요.', '나는 땅에 사는 동물 중에 제일 커요.', '나는 코로 물을 뿌려요.', '나는 코가 아주아주 길어요.']],
+    ['기린', '🦒', 'wild', ['나는 서서 잠을 자기도 해요.', '나는 혀가 아주 길고 까매요.', '나는 넓은 초원에 살아요.', '나는 머리에 작고 뭉툭한 뿔이 있어요.', '나는 몸에 갈색 무늬가 있어요.', '나는 동물 중에서 키가 제일 커요.', '나는 목이 아주아주 길어요.']],
+    ['얼룩말', '🦓', 'wild', ['나는 넓은 초원에 살아요.', '나는 풀을 먹어요.', '나는 친구들과 무리 지어 다녀요.', '나는 아주 빨리 달려요.', '나는 말이랑 닮았어요.', '내 무늬는 친구들과 모두 달라요.', '나는 하얀 몸에 까만 줄무늬가 있어요.']],
+    ['원숭이', '🐵', 'wild', ['나는 정글의 나무 위에 살아요.', '나는 사람이랑 손이 닮았어요.', '나는 친구 털을 골라 주며 사이좋게 지내요.', '나는 바나나를 좋아해요.', '나는 긴 꼬리로 나뭇가지를 잡아요.', '나는 나무에서 나무로 휙휙 건너가요.', '나는 흉내를 아주 잘 내요. "끽끽!"']],
+    ['하마', '🦛', 'wild', ['나는 아프리카 강가에 살아요.', '나는 밤에 물에서 나와 풀을 먹어요.', '나는 아주 무겁고 커요.', '나는 하루 대부분을 물속에서 지내요.', '나는 몸이 통통하고 다리가 짧아요.', '나는 콧구멍과 눈만 물 위로 내밀어요.', '나는 입을 엄청 크게 쩍 벌려요.']],
+    ['악어', '🐊', 'wild', ['나는 아주 오래전 공룡 시대부터 살았어요.', '나는 강이나 늪에 살아요.', '나는 알을 낳아요.', '나는 몸이 울퉁불퉁 단단한 비늘로 덮여 있어요.', '나는 꼬리가 길고 힘이 세요.', '나는 물속에 가만히 숨어서 먹이를 기다려요.', '나는 입이 길고 뾰족한 이빨이 많아요.']],
+    ['뱀', '🐍', 'wild', ['나는 알을 낳아요.', '나는 허물을 벗으며 자라요.', '나는 몸이 비늘로 덮여 있어요.', '나는 다리가 없어요.', '나는 몸이 아주 길어요.', '나는 스르륵 기어서 다녀요.', '나는 혀를 날름날름, "쉬익~" 소리를 내요.']],
+    ['판다', '🐼', 'wild', ['나는 중국의 산에 살아요.', '나는 곰 가족이에요.', '나는 하루 종일 먹고 자요.', '나는 몸이 동글동글하고 귀여워요.', '나는 대나무를 아주 좋아해요.', '나는 귀와 팔다리가 까매요.', '나는 하얀 몸에 눈 주위가 까매요.']],
+    ['코알라', '🐨', 'wild', ['나는 호주라는 나라에 살아요.', '나는 물을 거의 안 마셔요.', '나는 하루에 거의 스무 시간을 자요.', '나는 배 주머니에서 아기를 키워요.', '나는 유칼립투스 나뭇잎만 먹어요.', '나는 귀가 동그랗고 코가 크고 까매요.', '나는 나무를 꼭 껴안고 매달려 있어요.']],
+    ['캥거루', '🦘', 'wild', ['나는 호주라는 나라에 살아요.', '나는 풀을 먹어요.', '나는 뒤로는 걸을 수 없어요.', '나는 꼬리가 튼튼해서 의자처럼 기대요.', '나는 권투하듯이 앞발로 싸워요.', '나는 깡충깡충 아주 높이 뛰어요.', '나는 배 주머니에 아기를 넣고 다녀요.']],
+    ['곰', '🐻', 'wild', ['나는 깊은 숲에 살아요.', '나는 나무에 기어오를 수 있어요.', '나는 강에서 물고기를 잡아먹어요.', '나는 뒷다리로 벌떡 일어설 수 있어요.', '나는 덩치가 크고 털이 많아요.', '나는 겨울에 굴에서 겨울잠을 자요.', '나는 달콤한 꿀을 아주 좋아해요.']],
+    ['여우', '🦊', 'wild', ['나는 숲에 살아요.', '나는 귀가 아주 밝아요.', '나는 밤에 사냥을 해요.', '나는 개 가족이에요.', '나는 귀가 뾰족하고 털이 주황색이에요.', '옛날이야기에서 나는 꾀가 많다고 나와요.', '나는 꼬리가 크고 복슬복슬해요.']],
+    ['다람쥐', '🐿️', 'wild', ['나는 숲속 나무 위에 살아요.', '나는 앞니가 튼튼해요.', '나는 겨울에 먹으려고 먹이를 땅에 숨겨요.', '나는 나무를 아주 빨리 타요.', '나는 꼬리가 복슬복슬해요.', '나는 등에 줄무늬가 있어요.', '나는 도토리를 볼에 가득 넣고 다녀요.']],
+    ['고슴도치', '🦔', 'wild', ['나는 숲에 살아요.', '나는 밤에 깨어서 돌아다녀요.', '나는 벌레를 잡아먹어요.', '나는 코가 뾰족하고 작아요.', '나는 "킁킁" 냄새를 맡으며 다녀요.', '나는 무서우면 몸을 동그랗게 말아요.', '나는 등에 뾰족뾰족한 가시가 가득해요.']],
+
+    ['나비', '🦋', 'bug', ['나는 다리가 여섯 개예요.', '나는 발로 맛을 봐요.', '나는 꽃밭을 좋아해요.', '나는 어릴 때 애벌레였어요.', '나는 번데기에서 나왔어요.', '나는 빨대 같은 긴 입으로 꽃꿀을 먹어요.', '나는 알록달록한 날개로 팔랑팔랑 날아요.']],
+    ['벌', '🐝', 'bug', ['나는 여왕님을 모시고 살아요.', '나는 춤을 춰서 친구에게 꽃이 있는 곳을 알려 줘요.', '나는 꽃을 찾아 날아다녀요.', '나는 "윙윙" 소리를 내요.', '나는 엉덩이에 따끔한 침이 있어요.', '나는 노란색과 까만색 줄무늬예요.', '나는 달콤한 꿀을 만들어요.']],
+    ['개미', '🐜', 'bug', ['나는 아주 부지런해요.', '나는 땅속에 집을 지어요.', '나는 단 것을 아주 좋아해요.', '나는 아주아주 작아요.', '나는 내 몸보다 무거운 것도 번쩍 들어요.', '나는 친구들과 줄을 지어 걸어가요.', '베짱이가 노래할 때 나는 열심히 일했어요.']],
+    ['무당벌레', '🐞', 'bug', ['나는 다리가 여섯 개예요.', '나는 진딧물을 잡아먹는 고마운 벌레예요.', '나는 풀잎 위에 살아요.', '나는 몸이 작고 동글동글해요.', '나는 손가락 끝까지 기어가서 날아가요.', '나는 등의 껍데기를 열고 날아요.', '나는 빨간 등에 까만 점이 콕콕 있어요.']],
+    ['달팽이', '🐌', 'bug', ['나는 비 오는 날을 좋아해요.', '나는 상추를 좋아해요.', '내가 지나간 자리에는 반짝이는 길이 생겨요.', '나는 몸이 끈적끈적해요.', '나는 아주아주 느려요.', '나는 머리에 더듬이가 있어요.', '나는 등에 동글동글 집을 지고 다녀요.']],
+    ['거미', '🕷️', 'bug', ['나는 곤충이 아니에요.', '나는 눈이 여러 개예요.', '나는 집 구석이나 숲에 살아요.', '나는 파리나 모기를 잡아먹어요.', '내 엉덩이에서 실이 나와요.', '나는 다리가 여덟 개예요.', '나는 실로 줄을 쳐서 집을 만들어요.']],
+    ['애벌레', '🐛', 'bug', ['나는 나뭇잎 위에 살아요.', '나는 작은 알에서 나왔어요.', '나는 몸이 길쭉하고 말랑해요.', '나는 나뭇잎을 냠냠 먹어요.', '나는 꿈틀꿈틀 기어다녀요.', '나는 곧 번데기가 될 거예요.', '나는 자라면 나비가 돼요.']],
+    ['귀뚜라미', '🦗', 'bug', ['나는 다리가 여섯 개예요.', '나는 풀숲에 살아요.', '나는 긴 더듬이가 있어요.', '나는 몸이 갈색이나 까만색이에요.', '나는 뒷다리로 폴짝 뛰어요.', '나는 가을밤에 노래해요.', '나는 "귀뚤귀뚤" 하고 울어요.']],
+    ['모기', '🦟', 'bug', ['나는 물에서 태어났어요.', '나는 날개가 있어요.', '나는 여름밤에 나타나요.', '나는 입이 바늘처럼 뾰족해요.', '나는 귀 옆에서 "왱~" 소리를 내요.', '나는 사람의 피를 먹어요.', '나한테 물리면 간지러워요.']],
+
+    ['부엉이', '🦉', 'bird', ['나는 소리 없이 날 수 있어요.', '나는 숲에 살아요.', '나는 밤에 깨어 있어요.', '나는 쥐를 잡아먹어요.', '나는 머리에 귀처럼 생긴 깃털이 있어요.', '나는 눈이 크고 동그래요.', '나는 "부엉부엉" 하고 울어요.']],
+    ['독수리', '🦅', 'bird', ['나는 높은 산에 살아요.', '나는 아주 크고 힘센 새예요.', '나는 눈이 아주 좋아서 멀리까지 봐요.', '나는 부리가 갈고리처럼 구부러져 있어요.', '나는 날카로운 발톱으로 먹이를 잡아요.', '나는 "하늘의 왕"이라고 불려요.', '나는 커다란 날개를 펴고 하늘 높이 날아요.']],
+    ['앵무새', '🦜', 'bird', ['나는 따뜻한 숲에 살아요.', '나는 아주 오래 살아요.', '나는 딱딱한 열매를 부리로 톡 깨 먹어요.', '나는 발로 먹이를 잡고 먹어요.', '나는 깃털이 빨강, 파랑, 초록으로 알록달록해요.', '집에서 나를 키우기도 해요.', '나는 사람 말을 따라 해요.']],
+    ['플라밍고', '🦩', 'bird', ['나는 물가에 살아요.', '나는 친구들과 아주 많이 모여 살아요.', '나는 고개를 거꾸로 숙여서 먹이를 먹어요.', '나는 다리가 길고 가늘어요.', '나는 새우를 먹어서 몸이 분홍색이 돼요.', '나는 한 다리로 서서 잠을 자요.', '나는 온몸이 예쁜 분홍색인 새예요.']],
+    ['공작', '🦚', 'bird', ['나는 땅에서 지내고 조금만 날아요.', '나는 머리에 작은 왕관 같은 깃이 있어요.', '나는 목이 반짝이는 파란색이에요.', '나는 꼬리 깃털이 아주 길어요.', '나는 아주 멋진 새예요.', '내 깃털에는 눈 모양 무늬가 있어요.', '나는 꼬리를 부채처럼 활짝 펼쳐요.']],
+    ['백조', '🦢', 'bird', ['나는 호수에 살아요.', '나는 겨울이면 먼 곳에서 날아와요.', '나는 물 위에 우아하게 떠 있어요.', '나는 목이 길게 구부러져 있어요.', '나는 하얀 깃털을 가졌어요.', '발레 공연에 내가 나와요.', '"미운 오리 새끼"는 자라서 내가 됐어요.']],
+  ].map(([name, emoji, cats, hints]) => ({ name, emoji, cats: cats.split(' '), hints }));
+
+  const AUTO_REVEAL_SECONDS = 12;
+  const NUM = ['', '한', '두', '세', '네', '다섯'];
+  const hasBatchim = s => { const c = s.charCodeAt(s.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; };
+  const ieyo = s => s + (hasBatchim(s) ? '이에요' : '예요');
+  const ieosseoyo = s => s + (hasBatchim(s) ? '이었어요' : '였어요');
+  const nameHint = name => name.length === 1
+    ? '내 이름은 딱 한 글자예요!'
+    : `내 이름은 ${NUM[name.length]} 글자예요. "${name[0]}" 자로 시작해요.`;
+  const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const $ = id => document.getElementById(id);
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  };
+
+  let stars = store.get('quiz.stars', 0);
+  let soundOn = store.get('quiz.sound', true);
+  let voiceName = store.get('quiz.voice', '');
+  let rate = store.get('quiz.rate', 0.95);
+  let recent = [];
+  let g = null;      // 지금 하고 있는 게임
+  let timer = null;  // 마지막 힌트 뒤 정답 공개까지 세는 시계
+
+  // 소리: 힌트 읽어 주기 + 효과음
+  // onDone은 다 읽은 뒤 한 번만 불려요. 소리가 꺼져 있거나 onend가 안 오는 기기에서도 시간이 지나면 불려요.
+  function say(text, onDone) {
+    let called = false;
+    const done = () => { if (!called) { called = true; if (onDone) onDone(); } };
+    const wait = soundOn ? Math.max(2500, text.length * 260 / rate) : 1500;
+    if (onDone) setTimeout(done, wait);
+    if (!soundOn || !('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ko-KR'; u.rate = rate; u.pitch = 1;
+      const v = pickVoice();
+      if (v) u.voice = v;
+      u.onend = () => setTimeout(done, 300);
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function hush() { try { speechSynthesis.cancel(); } catch (e) {} }
+  let actx = null;
+  function tone(freqs, dur = 0.14) {
+    if (!soundOn) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      freqs.forEach((f, i) => {
+        const o = actx.createOscillator(), gain = actx.createGain();
+        const t = actx.currentTime + i * dur;
+        o.type = 'sine'; o.frequency.value = f;
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(gain).connect(actx.destination);
+        o.start(t); o.stop(t + dur + 0.02);
+      });
+    } catch (e) {}
+  }
+
+  function stopTimer() { if (timer) { clearInterval(timer); timer = null; } $('countdown').textContent = ''; }
+  function show(id) {
+    ['home', 'play', 'win'].forEach(s => { $(s).hidden = s !== id; });
+    window.scrollTo(0, 0);
+  }
+  function renderStars() { $('stars').textContent = `⭐ ${stars}`; }
+  function renderSound() {
+    $('soundBtn').textContent = soundOn ? '🔊' : '🔇';
+    $('soundBtn').setAttribute('aria-pressed', String(soundOn));
+    $('soundBtn').setAttribute('aria-label', soundOn ? '소리 끄기' : '소리 켜기');
+  }
+
+  function poolFor(catId) { return catId === 'all' ? ANIMALS : ANIMALS.filter(a => a.cats.includes(catId)); }
+
+  function renderCats() {
+    $('cats').innerHTML = '';
+    CATS.forEach(c => {
+      const b = document.createElement('button');
+      b.className = 'cat';
+      b.id = 'cat-' + c.id;
+      b.style.setProperty('--tint', `var(${c.tint})`);
+      b.innerHTML = `<span class="e">${c.emoji}</span><span class="n">${c.name}</span><span class="c">${poolFor(c.id).length}마리</span>`;
+      b.addEventListener('click', () => start(c.id));
+      $('cats').appendChild(b);
+    });
+  }
+
+  function start(catId) {
+    stopTimer();
+    const pool = poolFor(catId);
+    const fresh = pool.filter(a => !recent.includes(a.name));
+    const answer = shuffle(fresh.length ? fresh : pool)[0];
+    recent = [answer.name, ...recent].slice(0, Math.min(8, pool.length - 1));
+
+    stopListening();
+    g = { catId, answer, hints: [...answer.hints, nameHint(answer.name)], shown: 1, done: false, seq: 0 };
+    $('heard').hidden = true;
+    $('pickBox').hidden = true;
+    $('catLabel').textContent = CATS.find(c => c.id === catId).name + ' 퀴즈';
+    renderHints();
+    show('play');
+    say(`나는 누구일까요? 힌트 1. ${g.hints[0]}`);
+  }
+
+  function renderHints() {
+    const i = g.shown - 1;
+    const last = g.shown >= g.hints.length;
+    $('bubbleLabel').textContent = last ? `힌트 ${g.shown} · 마지막 힌트` : `힌트 ${g.shown}`;
+    $('bubbleText').textContent = g.hints[i];
+    // 말풍선이 새 힌트마다 톡 튀어나오게 애니메이션을 다시 시작
+    const b = $('bubble'); b.style.animation = 'none'; void b.offsetWidth; b.style.animation = '';
+
+    $('goge').innerHTML = `${g.shown}고개 <small>/ ${g.hints.length}</small>`;
+    $('nextBtn').textContent = last ? '마지막 힌트예요' : '다음 힌트 ▶';
+    $('nextBtn').disabled = last;
+
+    $('hints').innerHTML = '';
+    g.hints.slice(0, i).forEach((h, n) => {
+      const li = document.createElement('li');
+      li.className = 'hint';
+      li.innerHTML = `<span class="num">${n + 1}</span><span></span>`;
+      li.lastChild.textContent = h;
+      $('hints').appendChild(li);
+    });
+    $('past').hidden = i === 0;
+  }
+
+  function nextHint() {
+    if (g.done || g.shown >= g.hints.length) return;
+    g.seq++;
+    stopListening();
+    $('heard').hidden = true;
+    g.shown++;
+    renderHints();
+    say(`힌트 ${g.shown}. ${g.hints[g.shown - 1]}`);
+    if (g.shown >= g.hints.length) startCountdown();
+  }
+
+  // 마지막 힌트까지 나오면 잠깐 생각할 시간을 주고 정답을 보여 줘요
+  function startCountdown() {
+    stopTimer();
+    let left = AUTO_REVEAL_SECONDS;
+    const tick = () => { $('countdown').textContent = `${left}초 뒤에 정답이 나와요.`; };
+    tick();
+    timer = setInterval(() => {
+      left--;
+      if (left <= 0) { stopTimer(); reveal(false); } else tick();
+    }, 1000);
+  }
+
+  function reveal(won) {
+    if (g.done) return;
+    g.done = true;
+    g.seq++;
+    stopTimer();
+    stopListening();
+    const a = g.answer;
+    $('win').classList.toggle('won', won);
+    $('winEmoji').textContent = a.emoji;
+    $('winName').textContent = a.name;
+    $('earned').hidden = !won;
+    if (won) {
+      stars++;
+      store.set('quiz.stars', stars);
+      renderStars();
+      $('winTitle').textContent = '맞았어요! 🎉';
+      $('winMsg').textContent = `${g.shown}고개 만에 맞혔어요!`;
+      tone([523, 659, 784, 1047], 0.12);
+      say(`맞았어요! 나는 ${ieyo(a.name)}! ${g.shown}고개 만에 맞혔어요!`);
+    } else {
+      $('winTitle').textContent = '정답은…';
+      $('winMsg').textContent = `${ieosseoyo(a.name)}! 다음엔 꼭 맞혀 봐요!`;
+      tone([392, 523], 0.18);
+      say(`정답은 ${ieosseoyo(a.name)}! 다음엔 꼭 맞혀 봐요!`);
+    }
+    show('win');
+  }
+
+  // ── 정답 말하기: 음성인식으로 아이가 말한 이름을 알아들어요 ──
+  // 같은 동물을 부르는 다른 이름들. 아이가 이렇게 말해도 정답으로 쳐요.
+  const ALIASES = {
+    '강아지': ['개', '멍멍이', '강쥐', '댕댕이'], '고양이': ['야옹이', '냥이'], '거북이': ['거북'],
+    '벌': ['꿀벌'], '게': ['꽃게', '개'], '소': ['젖소', '황소', '송아지'], '말': ['조랑말', '망아지'],
+    '백조': ['고니'], '플라밍고': ['홍학', '플라밍코'], '공작': ['공작새'], '판다': ['팬더', '팬다'],
+    '바닷가재': ['랍스터', '랍스타', '가재'], '물개': ['바다표범', '물범'], '열대어': ['물고기', '니모'],
+    '부엉이': ['올빼미'], '앵무새': ['앵무'], '애벌레': ['송충이', '벌레'], '닭': ['병아리', '꼬꼬닭'],
+    '돼지': ['꿀꿀이'], '다람쥐': ['청설모'], '원숭이': ['몽키'], '오징어': ['꼴뚜기'],
+  };
+  const norm = t => (t || '').toLowerCase().replace(/[^가-힣a-z]/g, '');
+  const eunNeun = s => s + (hasBatchim(s) ? '은' : '는');
+  const TERMS = ANIMALS.flatMap(a => [a.name, ...(ALIASES[a.name] || [])].map(w => ({ w: norm(w), a })));
+
+  // 말한 문장에서 동물 이름을 찾아요. "고양이"의 "양", "얼룩말"의 "말"처럼 더 긴 이름 속 글자는 빼요.
+  function animalsIn(text) {
+    const t = norm(text);
+    const hits = [];
+    TERMS.forEach(({ w, a }) => {
+      let i = t.indexOf(w);
+      while (i !== -1) { hits.push({ s: i, e: i + w.length, a }); i = t.indexOf(w, i + 1); }
+    });
+    const kept = hits.filter(h => !hits.some(o => o.e - o.s > h.e - h.s && o.s <= h.s && o.e >= h.e));
+    return [...new Set(kept.map(h => h.a))];
+  }
+  // 한 글자만 틀린 비슷한 말(예: "코끼리"→"코기리")도 두 글자 넘는 이름이면 정답으로 쳐요
+  function nearly(t, name) {
+    t = norm(t); name = norm(name);
+    if (name.length < 3) return false;
+    for (let i = 0; i + name.length <= t.length + 1; i++) {
+      const part = t.slice(i, i + name.length);
+      if (part.length !== name.length) continue;
+      let diff = 0;
+      for (let k = 0; k < name.length; k++) if (part[k] !== name[k]) diff++;
+      if (diff <= 1) return true;
+    }
+    return false;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null;
+  let micBroken = !SR;
+
+  function feedback(face, text, kind) {
+    $('heardFace').textContent = face;
+    $('heardText').textContent = text;
+    $('heard').className = 'heard' + (kind ? ' ' + kind : '');
+    $('heard').hidden = false;
+  }
+  function setListening(on) {
+    $('speakBtn').classList.toggle('listening', on);
+    $('speakBtn').textContent = on ? '👂 듣고 있어요… 말해 보세요' : '🎤 정답 말하기';
+  }
+  function stopListening() {
+    if (rec) { const r = rec; rec = null; try { r.abort(); } catch (e) {} }
+    setListening(false);
+  }
+  function afterUnclear() {
+    if (!g.done && g.shown >= g.hints.length && !timer) startCountdown();
+  }
+
+  function listen() {
+    if (!g || g.done) return;
+    if (rec) { try { rec.stop(); } catch (e) {} return; }   // 한 번 더 누르면 듣기를 끝내요
+    if (micBroken) {
+      feedback('🎤', '이 화면에서는 마이크를 쓸 수 없어요. 그림으로 골라 볼까요?', 'bad');
+      openPicks();
+      return;
+    }
+    hush();
+    stopTimer();
+    g.seq++;
+    const seq = g.seq;
+    const r = new SR();
+    r.lang = 'ko-KR'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = false;
+    let handled = false;
+    r.onresult = e => {
+      const res = e.results[e.results.length - 1];
+      const alts = Array.from(res).map(x => x.transcript);
+      if (!res.isFinal) { feedback('👂', `"${alts[0].trim()}"…`); return; }
+      handled = true;
+      try { r.stop(); } catch (err) {}
+      judge(alts, seq);
+    };
+    r.onerror = e => {
+      if (e.error === 'no-speech' || e.error === 'aborted') return;
+      if (['not-allowed', 'service-not-allowed', 'audio-capture', 'network'].includes(e.error)) {
+        micBroken = true;
+        feedback('🎤', e.error === 'network'
+          ? '음성 인식이 연결되지 않았어요. 대신 그림으로 골라 볼까요?'
+          : '마이크를 쓸 수 없어요. 마이크를 허락하거나, 그림으로 골라 봐요.', 'bad');
+        openPicks();
+      }
+    };
+    r.onend = () => {
+      if (rec === r) rec = null;
+      setListening(false);
+      if (seq !== g.seq || g.done) return;
+      if (!handled && !micBroken) {
+        feedback('🙉', '아무 소리도 안 들렸어요. 버튼을 누르고 크게 말해 봐요!', 'bad');
+        afterUnclear();
+      }
+    };
+    try {
+      r.start();
+      rec = r;
+      setListening(true);
+      setTimeout(() => { if (rec === r) { try { r.stop(); } catch (e) {} } }, 8000);
+    } catch (e) {
+      micBroken = true;
+      feedback('🎤', '이 화면에서는 마이크를 쓸 수 없어요. 그림으로 골라 볼까요?', 'bad');
+      openPicks();
+    }
+  }
+
+  function judge(alts, seq) {
+    const a = g.answer;
+    const right = alts.some(t => animalsIn(t).includes(a) || nearly(t, a.name));
+    if (right) { reveal(true); return; }
+    const heardText = alts[0].trim();
+    const other = alts.map(animalsIn).find(list => list.length);
+    if (!other) {
+      feedback('🤔', heardText ? `"${heardText}"(이)라고 들었어요. 동물 이름을 한 번 더 말해 줄래요?` : '잘 못 알아들었어요. 한 번 더 말해 줄래요?', 'bad');
+      say(heardText ? `${heardText}? 잘 모르겠어요. 동물 이름을 한 번 더 말해 줄래요?` : '잘 못 알아들었어요. 한 번 더 말해 줄래요?', afterUnclear);
+      return;
+    }
+    const guess = other[0].name;
+    const last = g.shown >= g.hints.length;
+    feedback('🙅', `${eunNeun(guess)} 아니에요!` + (last ? '' : ' 다음 힌트를 들어 봐요.'), 'bad');
+    tone([330, 262], 0.16);
+    say(`음, ${eunNeun(guess)} 아니에요.` + (last ? '' : ' 힌트를 하나 더 들어 볼까요?'), () => {
+      if (seq !== g.seq || g.done) return;
+      if (last) reveal(false); else nextHint();
+    });
+  }
+
+  // ── 그림으로 고르기: 마이크가 없거나 말하기 어려울 때 ──
+  function openPicks() {
+    if (!g || g.done) return;
+    const pool = poolFor(g.catId).length >= 4 ? poolFor(g.catId) : ANIMALS;
+    const others = shuffle(pool.filter(x => x !== g.answer)).slice(0, 3);
+    const box = $('picks');
+    box.innerHTML = '';
+    shuffle([g.answer, ...others]).forEach(x => {
+      const b = document.createElement('button');
+      b.className = 'pick';
+      b.innerHTML = `<span class="e"></span><span class="n"></span>`;
+      b.firstChild.textContent = x.emoji;
+      b.lastChild.textContent = x.name;
+      b.addEventListener('click', () => {
+        if (g.done) return;
+        if (x === g.answer) { reveal(true); return; }
+        b.classList.add('wrong'); b.disabled = true;
+        feedback('🙅', `${eunNeun(x.name)} 아니에요! 다시 골라 봐요.`, 'bad');
+        tone([330, 262], 0.16);
+        say(`${eunNeun(x.name)} 아니에요. 다시 골라 봐요!`);
+      });
+      box.appendChild(b);
+    });
+    $('pickBox').hidden = false;
+    $('pickBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  $('speakBtn').addEventListener('click', listen);
+  $('pickBtn').addEventListener('click', () => { stopListening(); openPicks(); });
+  $('revealBtn').addEventListener('click', () => { hush(); reveal(false); });
+  $('nextBtn').addEventListener('click', nextHint);
+  $('repeatBtn').addEventListener('click', () => { stopListening(); say(`힌트 ${g.shown}. ${g.hints[g.shown - 1]}`); });
+  $('homeBtn').addEventListener('click', () => { stopTimer(); stopListening(); hush(); if (g) g.seq++; show('home'); });
+  $('againBtn').addEventListener('click', () => start(g.catId));
+  $('otherBtn').addEventListener('click', () => { hush(); show('home'); });
+  $('soundBtn').addEventListener('click', () => {
+    soundOn = !soundOn;
+    store.set('quiz.sound', soundOn);
+    if (!soundOn) hush();
+    renderSound();
+  });
+  // 목소리: 기기에 있는 한국어 목소리 중 자연스러운 것을 먼저 골라요
+  function koVoices() {
+    try { return speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().replace('_', '-').startsWith('ko')); }
+    catch (e) { return []; }
+  }
+  function voiceScore(v) {
+    const n = v.name;
+    let s = 0;
+    if (/natural|neural|online/i.test(n)) s += 4;
+    if (/enhanced|premium|고품질|향상/i.test(n)) s += 4;
+    if (/google/i.test(n)) s += 2;
+    if (/yuna|sunhi|injoon|유나/i.test(n)) s += 1;
+    return s;
+  }
+  function sortedVoices() { return koVoices().sort((a, b) => voiceScore(b) - voiceScore(a)); }
+  function pickVoice() {
+    const vs = sortedVoices();
+    return vs.find(v => v.name === voiceName) || vs[0] || null;
+  }
+  function renderVoices() {
+    const vs = sortedVoices();
+    const sel = $('voiceSel');
+    $('rateSel').value = String(rate);
+    sel.innerHTML = '';
+    if (!vs.length) {
+      sel.innerHTML = '<option>기본 목소리</option>';
+      sel.disabled = true;
+      $('voiceNote').textContent = '이 기기에는 한국어 목소리가 따로 없어요. 기기 설정에서 한국어 음성을 내려받으면 더 자연스러워져요.';
+      return;
+    }
+    sel.disabled = false;
+    const cur = pickVoice();
+    vs.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v.name;
+      o.textContent = v.name.replace(/^Microsoft\s+/, '').replace(/\s*-\s*Korean.*$/i, '');
+      if (cur && v.name === cur.name) o.selected = true;
+      sel.appendChild(o);
+    });
+    $('voiceNote').textContent = vs.length > 1
+      ? `이 기기에 한국어 목소리가 ${vs.length}개 있어요. 하나씩 들어 보고 마음에 드는 걸 고르세요.`
+      : '이 기기에는 한국어 목소리가 하나뿐이에요. 기기 설정에서 더 자연스러운 목소리를 내려받을 수 있어요.';
+  }
+  const SAMPLE = '나는 누구일까요? 힌트 1. 나는 물속에 살지만 물고기가 아니에요.';
+  $('voiceSel').addEventListener('change', e => { voiceName = e.target.value; store.set('quiz.voice', voiceName); say(SAMPLE); });
+  $('rateSel').addEventListener('change', e => { rate = parseFloat(e.target.value) || 0.95; store.set('quiz.rate', rate); say(SAMPLE); });
+  $('testVoice').addEventListener('click', () => say(SAMPLE));
+  if ('speechSynthesis' in window) {
+    try { speechSynthesis.addEventListener('voiceschanged', renderVoices); } catch (e) {}
+  }
+  renderVoices();
+
+  renderCats();
+  renderStars();
+  renderSound();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  }
+</script>
+</body>
+</html>
