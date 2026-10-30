@@ -1,6 +1,6 @@
 // 한 번 열어 두면 인터넷이 없어도 퀴즈가 열리게 앱 파일을 저장해 둬요.
 // 앱을 고친 뒤에는 VERSION 숫자를 올려야 기기에 새 버전이 들어가요.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

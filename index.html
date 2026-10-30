@@ -277,6 +277,7 @@
       <button class="btn ghost" id="revealBtn">🙈 정답 보기</button>
     </div>
     <div class="heard" id="heard" hidden aria-live="polite"><span class="face" id="heardFace"></span><span id="heardText"></span></div>
+    <p class="countdown" id="guessed" hidden></p>
     <div id="pickBox" hidden>
       <p class="picks-title">누구일까요? 하나를 골라 보세요.</p>
       <div class="picks" id="picks"></div>
@@ -469,9 +470,10 @@
     recent = [answer.name, ...recent].slice(0, Math.min(8, pool.length - 1));
 
     stopListening();
-    g = { catId, answer, hints: [...answer.hints, nameHint(answer.name)], shown: 1, done: false, seq: 0 };
+    g = { catId, answer, hints: [...answer.hints, nameHint(answer.name)], shown: 1, done: false, seq: 0, guesses: [] };
     $('heard').hidden = true;
     $('pickBox').hidden = true;
+    renderGuesses();
     $('catLabel').textContent = CATS.find(c => c.id === catId).name + ' 퀴즈';
     renderHints();
     show('play');
@@ -559,23 +561,65 @@
     '벌': ['꿀벌'], '게': ['꽃게', '개'], '소': ['젖소', '황소', '송아지'], '말': ['조랑말', '망아지'],
     '백조': ['고니'], '플라밍고': ['홍학', '플라밍코'], '공작': ['공작새'], '판다': ['팬더', '팬다'],
     '바닷가재': ['랍스터', '랍스타', '가재'], '물개': ['바다표범', '물범'], '열대어': ['물고기', '니모'],
-    '부엉이': ['올빼미'], '앵무새': ['앵무'], '애벌레': ['송충이', '벌레'], '닭': ['병아리', '꼬꼬닭'],
+    '부엉이': ['올빼미'], '앵무새': ['앵무'], '애벌레': ['송충이'], '닭': ['병아리', '꼬꼬닭'],
     '돼지': ['꿀꿀이'], '다람쥐': ['청설모'], '원숭이': ['몽키'], '오징어': ['꼴뚜기'],
   };
   const norm = t => (t || '').toLowerCase().replace(/[^가-힣a-z]/g, '');
   const eunNeun = s => s + (hasBatchim(s) ? '은' : '는');
-  const TERMS = ANIMALS.flatMap(a => [a.name, ...(ALIASES[a.name] || [])].map(w => ({ w: norm(w), a })));
 
-  // 말한 문장에서 동물 이름을 찾아요. "고양이"의 "양", "얼룩말"의 "말"처럼 더 긴 이름 속 글자는 빼요.
-  function animalsIn(text) {
+  // 퀴즈에는 안 나오지만 아이가 말할 만한 동물들. 알아듣고 "○○는 아니에요"라고 답해 줘요.
+  const EXTRA = {
+    sea: '해파리 불가사리 조개 소라 고등어 참치 연어 가오리 해마 바다사자 범고래 성게 멸치 갈치 장어 금붕어 붕어 잉어 메기 산호 고래상어 흰동가리',
+    farm: '쥐 햄스터 기니피그 당나귀 칠면조 거위',
+    wild: '늑대 치타 표범 재규어 하이에나 코뿔소 낙타 사슴 노루 고릴라 침팬지 오랑우탄 너구리 라쿤 스컹크 두더지 박쥐 멧돼지 들소 북극곰 카멜레온 도마뱀 이구아나 공룡 티라노사우루스 수달 비버 개구리 두꺼비 올챙이 순록 사막여우 알파카 라마 나무늘보 개미핥기 레서판다 퓨마 다람쥐원숭이',
+    bug: '잠자리 매미 메뚜기 사마귀 파리 바퀴벌레 지렁이 반딧불이 장수풍뎅이 사슴벌레 풍뎅이 말벌 벼룩 지네 전갈 소금쟁이 하루살이 나방 베짱이 방아깨비 진딧물',
+    bird: '참새 비둘기 까치 까마귀 갈매기 제비 두루미 황새 타조 딱따구리 기러기 벌새 꾀꼬리 왜가리 펠리컨 원앙 매 학',
+  };
+  const EXTRA_ANIMALS = Object.entries(EXTRA).flatMap(([cat, list]) => list.split(' ').map(name => ({ name, cats: [cat], extra: true })));
+
+  // "새", "곤충"처럼 무리를 부르는 말
+  const GROUPS = [
+    { w: '새', cat: 'bird', say: '새' }, { w: '곤충', cat: 'bug', say: '곤충' }, { w: '벌레', cat: 'bug', say: '벌레' },
+    { w: '물고기', cat: 'sea', say: '물고기' }, { w: '바다동물', cat: 'sea', say: '바다 동물' },
+  ];
+  const GROUP_DESC = { sea: '바다에 사는 동물', farm: '농장이나 집에서 만나는 동물', wild: '숲이나 초원, 정글에 사는 동물', bug: '곤충이나 작은 벌레', bird: '새' };
+
+  // 서로 많이 닮아서 헷갈리기 쉬운 동물들. 이 안에서 틀리면 "아까워요!"라고 해 줘요.
+  const LOOKALIKES = [
+    '고래 돌고래 범고래 상어 고래상어', '게 바닷가재 새우 가재', '오징어 문어 꼴뚜기', '물개 바다사자 물범 바다표범',
+    '사자 호랑이 표범 치타 재규어 퓨마', '강아지 여우 늑대 사막여우 너구리', '말 얼룩말 당나귀 조랑말',
+    '소 염소 양 알파카 라마', '오리 백조 거위 기러기', '닭 칠면조 공작', '부엉이 올빼미', '독수리 매 까마귀',
+    '나비 나방', '귀뚜라미 메뚜기 베짱이 방아깨비', '벌 말벌 파리', '원숭이 고릴라 침팬지 오랑우탄',
+    '하마 코뿔소 코끼리', '악어 도마뱀 이구아나 뱀', '곰 판다 북극곰 레서판다', '코알라 캥거루', '거북이 거북 달팽이',
+    '다람쥐 청설모 쥐 햄스터', '고슴도치 두더지', '애벌레 지렁이 송충이', '플라밍고 홍학 두루미 황새 학 왜가리',
+  ].map(l => l.split(' '));
+
+  const TERMS = [
+    ...ANIMALS.flatMap(a => [a.name, ...(ALIASES[a.name] || [])].map(w => ({ w: norm(w), a }))),
+    ...EXTRA_ANIMALS.map(a => ({ w: norm(a.name), a })),
+    ...GROUPS.map(gr => ({ w: gr.w, group: gr })),
+  ];
+
+  // 말한 문장에서 동물 이름과 무리 이름을 찾아요. "고양이"의 "양", "얼룩말"의 "말"처럼 더 긴 이름 속 글자는 빼요.
+  function termsIn(text) {
     const t = norm(text);
     const hits = [];
-    TERMS.forEach(({ w, a }) => {
-      let i = t.indexOf(w);
-      while (i !== -1) { hits.push({ s: i, e: i + w.length, a }); i = t.indexOf(w, i + 1); }
+    TERMS.forEach(term => {
+      let i = t.indexOf(term.w);
+      while (i !== -1) { hits.push({ s: i, e: i + term.w.length, term }); i = t.indexOf(term.w, i + 1); }
     });
-    const kept = hits.filter(h => !hits.some(o => o.e - o.s > h.e - h.s && o.s <= h.s && o.e >= h.e));
-    return [...new Set(kept.map(h => h.a))];
+    const kept = hits.filter(h => !hits.some(o => o.e - o.s > h.e - h.s && o.s <= h.s && o.e >= h.e)).sort((x, y) => x.s - y.s);
+    return {
+      animals: [...new Set(kept.filter(h => h.term.a).map(h => h.term.a))],
+      groups: [...new Set(kept.filter(h => h.term.group).map(h => h.term.group))],
+    };
+  }
+  const animalsIn = text => termsIn(text).animals;
+  const namesOf = a => [a.name, ...(ALIASES[a.name] || [])];
+  function lookalike(x, y) {
+    const xs = namesOf(x), ys = namesOf(y);
+    if (xs.some(n => ys.some(m => n.length > 1 && m.length > 1 && (n.includes(m) || m.includes(n))))) return true;
+    return LOOKALIKES.some(l => xs.some(n => l.includes(n)) && ys.some(m => l.includes(m)));
   }
   // 한 글자만 틀린 비슷한 말(예: "코끼리"→"코기리")도 두 글자 넘는 이름이면 정답으로 쳐요
   function nearly(t, name) {
@@ -667,25 +711,88 @@
     }
   }
 
+  // 아이가 말한 답에 맞춰 반응해요.
+  // 정답 → 축하 / 닮은 동물 → "아까워요" 다시 말하기 / 다른 동물 → 무리 힌트 + 다음 힌트
+  // "새", "곤충" → 맞는 무리인지 알려 주기 / "몰라" → 다음 힌트 / "정답 알려 줘" → 정답 / 못 알아들음 → 다시 말하기
   function judge(alts, seq) {
     const a = g.answer;
-    const right = alts.some(t => animalsIn(t).includes(a) || nearly(t, a.name));
-    if (right) { reveal(true); return; }
+    const parsed = alts.map(termsIn);
     const heardText = alts[0].trim();
-    const other = alts.map(animalsIn).find(list => list.length);
-    if (!other) {
-      feedback('🤔', heardText ? `"${heardText}"(이)라고 들었어요. 동물 이름을 한 번 더 말해 줄래요?` : '잘 못 알아들었어요. 한 번 더 말해 줄래요?', 'bad');
-      say(heardText ? `${heardText}? 잘 모르겠어요. 동물 이름을 한 번 더 말해 줄래요?` : '잘 못 알아들었어요. 한 번 더 말해 줄래요?', afterUnclear);
+    const last = g.shown >= g.hints.length;
+    const sayThen = (text, then) => say(text, () => { if (seq === g.seq && !g.done) then(); });
+    const tryAgain = () => afterUnclear();
+    const goNext = () => { if (last) afterUnclear(); else nextHint(); };
+
+    // 1. 정답: 들은 말 후보 가운데 하나라도 정답 이름이 있으면 맞혔어요.
+    //    다른 동물 이름이 또렷하게 없을 때만 한 글자 틀린 말("코기리")도 정답으로 쳐요. ("호랑이"를 "고양이"로 치지 않게)
+    if (parsed.some(p => p.animals.includes(a))) { reveal(true); return; }
+    if (!parsed.some(p => p.animals.length) && alts.some(t => nearly(t, a.name))) { reveal(true); return; }
+
+    const all = norm(alts.join(' '));
+    // 2. 포기
+    if (/정답알려|답알려|알려줘|포기|그만할래/.test(all)) { feedback('🙈', '알았어요, 정답을 보여 줄게요!'); hush(); reveal(false); return; }
+
+    const guessObj = parsed.map(p => p.animals[0]).find(Boolean);
+    const groupObj = parsed.map(p => p.groups[0]).find(Boolean);
+
+    // 3. 다른 동물을 말했어요
+    if (guessObj) {
+      const guess = guessObj.name;
+      tone([330, 262], 0.16);
+      if (g.guesses.includes(guess)) {
+        feedback('😊', `${eunNeun(guess)} 아까 말했어요! 다른 동물을 생각해 봐요.`, 'bad');
+        sayThen(`${eunNeun(guess)} 아까 말했어요. 다른 동물을 생각해 볼까요?`, tryAgain);
+        return;
+      }
+      g.guesses.push(guess);
+      renderGuesses();
+      if (lookalike(guessObj, a)) {
+        feedback('😮', `아까워요! ${guess}랑 많이 닮았지만, ${eunNeun(guess)} 아니에요. 한 번 더 말해 볼래요?`, 'bad');
+        sayThen(`아까워요! 거의 다 왔어요. 나는 ${guess}랑 닮았지만, ${eunNeun(guess)} 아니에요. 한 번 더 말해 볼래요?`, tryAgain);
+        return;
+      }
+      const same = guessObj.cats.some(c => a.cats.includes(c));
+      const desc = GROUP_DESC[a.cats[0]];
+      const tail = last ? ' 한 번 더 말해 볼래요?' : ' 힌트를 하나 더 들어 봐요.';
+      if (same) {
+        feedback('🙅', `${eunNeun(guess)} 아니에요. 그래도 잘 생각했어요! 나도 ${guess}처럼 ${ieyo(desc)}.` + tail, 'bad');
+        sayThen(`${eunNeun(guess)} 아니에요. 그래도 잘 생각했어요! 나도 ${guess}처럼 ${ieyo(desc)}.` + tail, goNext);
+      } else {
+        feedback('🙅', `${eunNeun(guess)} 아니에요. 나는 ${ieyo(desc)}.` + tail, 'bad');
+        sayThen(`음, ${eunNeun(guess)} 아니에요. 힌트를 줄게요. 나는 ${ieyo(desc)}.` + tail, goNext);
+      }
       return;
     }
-    const guess = other[0].name;
-    const last = g.shown >= g.hints.length;
-    feedback('🙅', `${eunNeun(guess)} 아니에요!` + (last ? '' : ' 다음 힌트를 들어 봐요.'), 'bad');
-    tone([330, 262], 0.16);
-    say(`음, ${eunNeun(guess)} 아니에요.` + (last ? '' : ' 힌트를 하나 더 들어 볼까요?'), () => {
-      if (seq !== g.seq || g.done) return;
-      if (last) reveal(false); else nextHint();
-    });
+
+    // 4. "새", "곤충"처럼 무리를 말했어요
+    if (groupObj) {
+      const what = groupObj.say;
+      if (a.cats.includes(groupObj.cat)) {
+        feedback('👍', `맞아요, 나는 ${ieyo(what)}! 그런데 어떤 ${what}일까요? 이름을 말해 봐요.`, 'ok');
+        sayThen(`맞아요, 나는 ${ieyo(what)}! 그런데 어떤 ${what}일까요? 이름을 말해 봐요.`, tryAgain);
+      } else {
+        feedback('🙅', `나는 ${what}${hasBatchim(what) ? '이' : '가'} 아니에요. 나는 ${ieyo(GROUP_DESC[a.cats[0]])}.`, 'bad');
+        sayThen(`나는 ${what}${hasBatchim(what) ? '이' : '가'} 아니에요. 나는 ${ieyo(GROUP_DESC[a.cats[0]])}. 다시 생각해 볼까요?`, tryAgain);
+      }
+      return;
+    }
+
+    // 5. 모르겠대요
+    if (/몰라|모르겠|모름|글쎄|힌트/.test(all)) {
+      feedback('🤗', last ? '괜찮아요! 마지막 힌트를 다시 들어 봐요.' : '괜찮아요! 힌트를 하나 더 줄게요.');
+      if (last) sayThen(`괜찮아요! 마지막 힌트를 다시 들려줄게요. ${g.hints[g.shown - 1]}`, tryAgain);
+      else sayThen('괜찮아요! 힌트를 하나 더 줄게요.', nextHint);
+      return;
+    }
+
+    // 6. 동물 이름을 못 찾았어요
+    feedback('🤔', heardText ? `"${heardText}"(이)라고 들었어요. 내가 아는 동물 이름이 아니에요. 동물 이름을 크게 말해 줄래요?` : '잘 못 알아들었어요. 한 번 더 말해 줄래요?', 'bad');
+    sayThen(heardText ? `${heardText}? 내가 아는 동물 이름이 아니에요. 동물 이름을 크게 한 번 더 말해 줄래요?` : '잘 못 알아들었어요. 한 번 더 말해 줄래요?', tryAgain);
+  }
+
+  function renderGuesses() {
+    $('guessed').hidden = !g.guesses.length;
+    $('guessed').textContent = '말한 답: ' + g.guesses.map(n => n + ' ✗').join(', ');
   }
 
   // ── 그림으로 고르기: 마이크가 없거나 말하기 어려울 때 ──
